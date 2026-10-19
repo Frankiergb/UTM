@@ -116,16 +116,44 @@ static const int64_t kProcessTerminateTimeoutSeconds = 1;
     [self startQemuTask:binName standardOutput:standardOutput standardError:standardError libraryPath:libraryPath argv:argv completion:completion];
 }
 
-- (void)startQemuTask:(NSString *)binName standardOutput:(NSFileHandle *)standardOutput standardError:(NSFileHandle *)standardError libraryPath:(NSURL *)libraryPath argv:(NSArray<NSString *> *)argv completion:(void(^)(BOOL,NSString *))completion {
-    NSError *err;
-    NSTask *task = [NSTask new];
-    NSMutableArray<NSString *> *newArgv = [argv mutableCopy];
-    NSString *path = [libraryPath URLByAppendingPathComponent:binName].path;
-    __weak typeof(self) _self = self;
-    [newArgv insertObject:path atIndex:0];
-    task.executableURL = [[[NSBundle mainBundle] URLForAuxiliaryExecutable:@"QEMULauncher.app"] URLByAppendingPathComponent:@"Contents/MacOS/QEMULauncher"];
-    task.arguments = newArgv;
-    task.standardOutput = standardOutput;
+- (void)startQemuTask:(NSString *)binName
+standardOutput:(NSFileHandle*) standardOutput
+standardError: (NSFileHandle *)standardError {
+- NSError *err;
+- NSTask *task = [NSTask new];
+- NSMutableArray<NSString *> *newArgv = [argv
+mutableCopy];
+- NSString *path = [libraryPath
+stringByAppendingPathComponent:binName].path;
+- _weak typeof(self) _self = self;
+- [newArgv insertObject:path atIndex:0];
+- BOOL hasCpu = NO;
+- BOOL hasAccel = NO;
+- for (NSUInteger i = 0; i < [newArgv count]; i++) {
+- if ([newArgv[i] isEqualToString:@"-cpu"] && i + 1 <
+[newArgv count]) {
+- hasCpu = YES;
+- newArgv[i + 1] = @"host,tb-size=512";
+-｝
+- if ([newArgv[i] isEqualToString:@"-accel"] && i + 1 <
+[newArgv count]) {
+- hasAccel = YES;
+- newArgv[i + 1] = @"tcg,split-wx=on";
+-｝
+-｝
+- if (!hasCpu) {
+- [newArgv addObject:@"-cpu"];
+- [newArgv addObject:@"host, tb-size=512");
+-｝
+- if (!hasAccel) {
+- [newArgv addObject:@"-accel"];
+- [newArgv addObject:@"tcg,split-wx=on"];
+- }
+- [newArgv addObject:@"--math-jit=para-virtual"];
+- task.executableURL = [[NSBundle mainBundle]|
+URLForAuxiliaryExecutable:@"QEMULauncher.app");
+- task.arguments = newArgv;
+- task.standardOutput = standardOutput;
     task.standardError = standardError;
     NSMutableDictionary<NSString *, NSString *> *environment = [NSMutableDictionary dictionary];
     NSURL *renderServerURL = [[[NSBundle mainBundle] URLForAuxiliaryExecutable:@"QEMURenderServer.app"] URLByAppendingPathComponent:@"Contents/MacOS/QEMURenderServer"];

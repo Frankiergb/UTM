@@ -121,7 +121,7 @@ enum QEMUCPU_arm: String, CaseIterable, QEMUCPU {
     case pxa270_b1 = "pxa270-b1"
     case pxa270_c0 = "pxa270-c0"
     case pxa270_c5 = "pxa270-c5"
-    case `default` = "default"
+    case `default` = "host"
     case arm1026
     case arm1136
     case arm1136_r2 = "arm1136-r2"
@@ -203,7 +203,7 @@ enum QEMUCPU_aarch64: String, CaseIterable, QEMUCPU {
     case pxa270_b1 = "pxa270-b1"
     case pxa270_c0 = "pxa270-c0"
     case pxa270_c5 = "pxa270-c5"
-    case `default` = "default"
+    case `default` = "host"
     case a64fx
     case arm1026
     case arm1136
